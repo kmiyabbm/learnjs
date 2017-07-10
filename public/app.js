@@ -2,9 +2,23 @@
 
 let learnjs = {};
 
-learnjs.problemView = function(problemNumber) {
-  let title = 'Problem #' + problemNumber + ' Coming soon!';
-  return $('<div class="problem-view">').text(title);
+learnjs.problems = [
+  {
+    description: 'What is truth?',
+    code: 'function problem () { return __; }' 
+  },
+  {
+    description: 'Simple Math',
+    code: 'function problem () { return 43 === 6 * __; }'
+  }
+];
+
+learnjs.problemView = function(data) {
+  let problemNumber = parseInt(data, 10);
+  let view = $('.templates .problem-view').clone();
+  view.find('.title').text('Problem #' + problemNumber);
+  learnjs.applyObject(learnjs.problems[problemNumber - 1], view);
+  return view;
 }
 
 learnjs.showView = function(hash) {
@@ -24,3 +38,9 @@ learnjs.appOnReady = function() {
   };
   learnjs.showView(window.location.hash);
 }
+
+learnjs.applyObject = (obj, elem) => {
+  for (let key in obj) {
+    elem.find('[data-name="' + key + '"]').text(obj[key]);
+  }
+};
