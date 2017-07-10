@@ -24,7 +24,11 @@ describe ('LearnJS', () => {
   });
 
   describe('problem view', () => {
-    let view = learnjs.problemView('1');
+    let view;
+    beforeEach(function() {
+      view = learnjs.problemView('1');
+    });
+
     it('has a title that includes the problem number', () => {
       expect(view.find('.title').text()).toEqual('Problem #1');
     });
@@ -32,7 +36,7 @@ describe ('LearnJS', () => {
       expect(view.find('[data-name="description"]').text()).toEqual('What is truth?');
     });
     it('shows the problem code', () => {
-      expect(view.find('[data-name="code"]').text()).toEqual('function problem() { return __; }');
+      expect(view.find('[data-name="code"]').text()).toEqual('function problem () { return __; }');
     });
   });
 });
