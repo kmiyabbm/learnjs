@@ -5,7 +5,7 @@ let learnjs = {};
 learnjs.problems = [
   {
     description: 'What is truth?',
-    code: 'function problem () { return __; }' 
+    code: 'function problem () { return __; }'
   },
   {
     description: 'Simple Math',
