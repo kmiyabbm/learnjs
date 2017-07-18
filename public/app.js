@@ -27,7 +27,9 @@ learnjs.problemView = function(data) {
 
   function checkAnswerClick() {
     if (checkAnswer()) {
-      learnjs.flashElement(resultFlash, 'Correct!');
+      let correctFlash = learnjs.template('correct-flash');
+      correctFlash.find('a').attr('href', '#problem-' + (problemNumber + 1));
+      learnjs.flashElement(resultFlash, correctFlash);
     } else {
       learnjs.flashElement(resultFlash, 'Incorrect!');
     }
@@ -42,7 +44,8 @@ learnjs.problemView = function(data) {
 
 learnjs.showView = function(hash) {
   let routes = {
-    '#problem': learnjs.problemView
+    '#problem': learnjs.problemView,
+    '': learnjs.landingView
   };
   let hashParts = hash.split('-');
   let viewFn = routes[hashParts[0]];
@@ -69,4 +72,24 @@ learnjs.flashElement = (elem, content) => {
     elem.html(content);
     elem.fadeIn();
   });
+};
+
+learnjs.template = (name) => {
+  return $('.templates .' + name).clone();
+};
+
+learnjs.buildCorrectFlash = (problemNum) => {
+  let correctFlash = learnjs.template('correct-flash');
+  let link = correctFlash.find('a');
+  if (problemNum < learnjs.problems.length) {
+    link.attr('href', '#problem-' + (problemNum + 1));
+  } else {
+    link.attr('href', '');
+    link.text('You are Finished!');
+  }
+  return correctFlash;
+};
+
+learnjs.landingView = () => {
+  return learnjs.template('landing-view');
 };
