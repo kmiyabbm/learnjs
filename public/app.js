@@ -9,7 +9,7 @@ learnjs.problems = [
   },
   {
     description: 'Simple Math',
-    code: 'function problem () { return 43 === 6 * __; }'
+    code: 'function problem () { return 42 === 6 * __; }'
   }
 ];
 
@@ -27,13 +27,21 @@ learnjs.problemView = function(data) {
 
   function checkAnswerClick() {
     if (checkAnswer()) {
-      let correctFlash = learnjs.template('correct-flash');
-      correctFlash.find('a').attr('href', '#problem-' + (problemNumber + 1));
-      learnjs.flashElement(resultFlash, correctFlash);
+      let flashContent = learnjs.buildCorrectFlash(problemNumber);
+      learnjs.flashElement(resultFlash, flashContent);
     } else {
       learnjs.flashElement(resultFlash, 'Incorrect!');
     }
     return false;
+  }
+
+  if (problemNumber < learnjs.problems.length) {
+    var buttonItem = learnjs.template('skip-btn');
+    buttonItem.find('a').attr('href', '#problem-' + (problemNumber + 1));
+    $('.nav-list').append(buttonItem);
+    view.bind('removingView', function() {
+      buttonItem.remove();
+    });
   }
 
   view.find('.check-btn').click(checkAnswerClick);
@@ -51,7 +59,8 @@ learnjs.showView = function(hash) {
   let hashParts = hash.split('-');
   let viewFn = routes[hashParts[0]];
   if (viewFn) {
-    $('.view-container').empty().append(viewFn(hashParts[1]));
+    learnjs.triggerEvent('removingView', []);
+    $('.view-container').empty().append(viewFn(hashParts[1]))
   }
 }
 
@@ -93,4 +102,8 @@ learnjs.buildCorrectFlash = (problemNum) => {
 
 learnjs.landingView = () => {
   return learnjs.template('landing-view');
+};
+
+learnjs.triggerEvent = (name, args) => {
+  $('.view-container>*').trigger(name, args);
 };
