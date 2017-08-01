@@ -1,6 +1,8 @@
 'use strict';
 
-let learnjs = {};
+let learnjs = {
+  PoolId: 'us-east-1:993b106d-53b6-4d4c-b751-4760f0ef382d'
+};
 
 learnjs.problems = [
   {
@@ -107,3 +109,49 @@ learnjs.landingView = () => {
 learnjs.triggerEvent = (name, args) => {
   $('.view-container>*').trigger(name, args);
 };
+
+learnjs.awsRefresh = function() {
+  var deferred = new $.Deferred();
+  AWS.config.credentials.refresh(function(err) {
+    if (err) {
+      deferred.reject(err);
+    } else {
+      deferred.resolve(AWS.config.credentials.identityId);
+    }
+  });
+  return deferred.promise();
+}
+
+learnjs.identity = new $.Deferred();
+
+function googleSignIn(googleUser) {
+  let id_token = googleUser.getAuthResponse().id_token;
+  AWS.config.update({
+    region: 'us-east-1',
+    credentials: new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: learnjs.poolId,
+      Logins: {
+        'accounts.google.com': id_token
+      }
+    })
+  })
+
+  function refresh() {
+    return gapi.auth2.getAuthInstance().signIn({
+      prompt: 'login'
+    }).then(function(usertUpdate) {
+      let creds = awS.config.credentials;
+      let newToken = usertUpdate.getAuthResponse().id_token;
+      creds.params.Logins['accounts.google.com'] = newToken;
+      return learnjs.awsRefresh();
+    })
+  }
+
+  learnjs.awsRefresh().then(function(id) {
+    learnjs.identity.resolve({
+      id: id,
+      email: googleUser.getBasicProfile().getEmail(),
+      refresh: refresh
+    });
+  });
+}
