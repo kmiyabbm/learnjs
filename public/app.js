@@ -1,7 +1,7 @@
 'use strict';
 
 let learnjs = {
-  PoolId: 'us-east-1:993b106d-53b6-4d4c-b751-4760f0ef382d'
+  poolId: 'us-east-1:993b106d-53b6-4d4c-b751-4760f0ef382d'
 };
 
 learnjs.problems = [
@@ -55,6 +55,7 @@ learnjs.problemView = function(data) {
 learnjs.showView = function(hash) {
   let routes = {
     '#problem': learnjs.problemView,
+    '#profile': learnjs.profileView,
     '#': learnjs.landingView,
     '': learnjs.landingView
   };
@@ -71,6 +72,7 @@ learnjs.appOnReady = function() {
     learnjs.showView(window.location.hash);
   };
   learnjs.showView(window.location.hash);
+  learnjs.identity.done(learnjs.addProfileLink);
 }
 
 learnjs.applyObject = (obj, elem) => {
@@ -124,6 +126,20 @@ learnjs.awsRefresh = function() {
 
 learnjs.identity = new $.Deferred();
 
+learnjs.profileView = function() {
+  var view = learnjs.template('profile-view');
+  learnjs.identity.done(function(identity) {
+    view.find('.email').text(identity.email);
+  });
+  return view;
+}
+
+learnjs.addProfileLink = (profile) => {
+  let link = learnjs.template('profile-link');
+  link.find('a').text(profile.email);
+  $('.signin-bar').prepend(link);
+}
+
 function googleSignIn(googleUser) {
   let id_token = googleUser.getAuthResponse().id_token;
   AWS.config.update({
@@ -140,7 +156,7 @@ function googleSignIn(googleUser) {
     return gapi.auth2.getAuthInstance().signIn({
       prompt: 'login'
     }).then(function(usertUpdate) {
-      let creds = awS.config.credentials;
+      let creds = AWS.config.credentials;
       let newToken = usertUpdate.getAuthResponse().id_token;
       creds.params.Logins['accounts.google.com'] = newToken;
       return learnjs.awsRefresh();
