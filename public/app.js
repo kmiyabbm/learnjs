@@ -47,6 +47,12 @@ learnjs.problemView = function(data) {
     });
   }
 
+  learnjs.fetchAnswer(problemNumber).then(function(data) {
+    if (data.Item) {
+      answer.val(data.Item.answer);
+    }
+  });
+
   view.find('.check-btn').click(checkAnswerClick);
   view.find('.title').text('Problem #' + problemNumber);
   learnjs.applyObject(problemData, view);
@@ -211,3 +217,34 @@ learnjs.saveAnswer = function(problemId, answer) {
     })
   });
 };
+
+learnjs.fetchAnswer = function(problemId) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var item = {
+      TableName: 'learnjs',
+      Key: {
+        userId: identity.id,
+        problemId: problemId
+      }
+    };
+    return learnjs.sendDbRequest(db.get(item), function() {
+      return learnjs.fetchAnswer(problemId);
+    })
+  });
+};
+
+learnjs.countAnswers = function(problemId) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var params = {
+      TableName: 'learnjs',
+      Select: 'COUNT',
+      FilterExpression: 'problemId = :problemId',
+      ExpressionAttributeValues: {':problemId': problemId}
+    };
+    return learnjs.sendDbRequest(db.scan(params), function() {
+      return learnjs.countAnswers(problemId);
+    })
+  });
+}
