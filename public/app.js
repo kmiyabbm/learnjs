@@ -20,10 +20,10 @@ learnjs.problemView = function(data) {
   let view = $('.templates .problem-view').clone();
   let problemData = learnjs.problems[problemNumber - 1];
   let resultFlash = view.find('.result');
+  let answer =  view.find('.answer');
 
   function checkAnswer() {
-    let answer =  view.find('.answer').val();
-    let test = problemData.code.replace('__', answer) + '; problem();';
+    let test = problemData.code.replace('__', answer.val()) + '; problem();';
     return eval(test);
   }
 
@@ -31,6 +31,7 @@ learnjs.problemView = function(data) {
     if (checkAnswer()) {
       let flashContent = learnjs.buildCorrectFlash(problemNumber);
       learnjs.flashElement(resultFlash, flashContent);
+      learnjs.saveAnswer(problemNumber, answer.val());
     } else {
       learnjs.flashElement(resultFlash, 'Incorrect!');
     }
@@ -171,3 +172,42 @@ function googleSignIn(googleUser) {
     });
   });
 }
+
+learnjs.sendDbRequest = function(req, retry) {
+  var promise = new $.Deferred();
+  req.on('error', function(error) {
+    if (error.code === "CredentialsError") {
+      learnjs.identity.then(function(identity) {
+        return identity.refresh().then(function() {
+          return retry();
+        }, function() {
+          promise.reject(resp);
+        });
+      });
+    } else {
+      promise.reject(error);
+    }
+  });
+  req.on('success', function(resp) {
+    promise.resolve(resp.data);
+  });
+  req.send();
+  return promise;
+}
+
+learnjs.saveAnswer = function(problemId, answer) {
+  return learnjs.identity.then(function(identity) {
+    var db = new AWS.DynamoDB.DocumentClient();
+    var item = {
+      TableName: 'learnjs',
+      Item: {
+        userId: identity.id,
+        problemId: problemId,
+        answer: answer
+      }
+    };
+    return learnjs.sendDbRequest(db.put(item), function() {
+      return learnjs.saveAnswer(problemId, answer);
+    })
+  });
+};
