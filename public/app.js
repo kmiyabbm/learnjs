@@ -23,18 +23,29 @@ learnjs.problemView = function(data) {
   let answer =  view.find('.answer');
 
   function checkAnswer() {
+    let def = $.Deferred();
     let test = problemData.code.replace('__', answer.val()) + '; problem();';
-    return eval(test);
+    let worker = new Worker('worker.js');
+    worker.onmessage = function(e) {
+      if (e.data) {
+        def.resolve(e.data);
+      } else {
+        def.reject();
+      }
+    }
+    worker.postMessage(test);
+
+    return def;
   }
 
   function checkAnswerClick() {
-    if (checkAnswer()) {
+    checkAnswer().done(function() {
       let flashContent = learnjs.buildCorrectFlash(problemNumber);
       learnjs.flashElement(resultFlash, flashContent);
       learnjs.saveAnswer(problemNumber, answer.val());
-    } else {
+    }).fail(function() {
       learnjs.flashElement(resultFlash, 'Incorrect!');
-    }
+    });
     return false;
   }
 
@@ -246,5 +257,18 @@ learnjs.countAnswers = function(problemId) {
     return learnjs.sendDbRequest(db.scan(params), function() {
       return learnjs.countAnswers(problemId);
     })
+  });
+};
+
+learnjs.popularAnswers = function(problemId) {
+  return learnjs.identity.then(function() {
+    var lambda = new AWS.Lambda();
+    var params = {
+      FunctionName: 'learnjs_popularAnswers',
+      Payload: JSON.stringify({problemNumber: problemId})
+    };
+    return learnjs.sendAwsRequest(lambda.invoke(params), function() {
+      return learnjs.popularAnswers(problemId);
+    });
   });
 }

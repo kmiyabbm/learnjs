@@ -2,15 +2,15 @@
     "TracingConfig": {
         "Mode": "PassThrough"
     }, 
-    "CodeSha256": "/47JLTUp1MUx5wPJKc0KNItHVhHL2QRf8cjnKzdgfuQ=", 
+    "CodeSha256": "0bPDVHQQIoi+fPTAZQsYIKGmrabdOoEC9U8IgCdZ7pE=", 
     "FunctionName": "echo", 
-    "CodeSize": 811594, 
+    "CodeSize": 812295, 
     "MemorySize": 128, 
     "FunctionArn": "arn:aws:lambda:us-east-1:753087518225:function:echo", 
-    "Version": "1", 
+    "Version": "$LATEST", 
     "Role": "arn:aws:iam::753087518225:role/learnjs_lambda_exec", 
     "Timeout": 5, 
-    "LastModified": "2017-08-04T13:47:56.138+0000", 
+    "LastModified": "2017-08-04T14:45:01.541+0000", 
     "Handler": "index.echo", 
     "Runtime": "nodejs4.3", 
     "Description": ""
